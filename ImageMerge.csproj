@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Copyright>mihara kae</Copyright>
+    <Description>可以把一个文件夹里的图片每几个一组竖着拼接到一起的小工具</Description>
+    <PackageIcon>icon.jpg</PackageIcon>
+    <PackageIconUrl />
+    <Version>1.0.233</Version>
+    <AssemblyVersion>1.0.233.333</AssemblyVersion>
+    <FileVersion>1.0.233.333</FileVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentWPF" Version="0.8.0" />
+    <PackageReference Include="FolderBrowser.WPF" Version="1.0.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="SkiaSharp" Version="2.80.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="icon.jpg">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>

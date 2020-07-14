@@ -56,7 +56,7 @@ namespace ImageMerge
             get { return _concatNum; }
             set 
             { 
-                if(value <= 1 || value >= (_selectImageViewModels?.Count ?? int.MaxValue)) { return; }
+                if(value <= 1 || value > (_selectImageViewModels?.Count ?? int.MaxValue)) { return; }
                 _concatNum = value; 
                 OnPropertyChanged("ConcatNum"); PreviewMergeResult(); 
             }
@@ -103,6 +103,21 @@ namespace ImageMerge
                 PreviewMergeResult();
             }
         }
+
+        private bool _isMergeLastToPrevious;
+
+        public bool IsMergeLastToPrevious
+        {
+            get { return _isMergeLastToPrevious; }
+            set 
+            {
+                if (_isMergeLastToPrevious == value) return;
+                _isMergeLastToPrevious = value;
+                OnPropertyChanged("IsMergeLastToPrevious");
+                PreviewMergeResult();
+            }
+        }
+
         #endregion
 
         internal void SetFilePaths(string folderPath = null)
@@ -131,13 +146,22 @@ namespace ImageMerge
         {
             var selectedImagePaths = SelectedImagePaths;
             if (selectedImagePaths is null) return false;
-            var previewVMs = new List<PreviewImageViewModel>((selectedImagePaths.Count / ConcatNum));
 
-            int final_legenth = selectedImagePaths.Count % ConcatNum;
-            int final_index = selectedImagePaths.Count - final_legenth;
-            for (int i = 0; i < selectedImagePaths.Count; i = i + ConcatNum)
+            int lastLegenth = selectedImagePaths.Count % ConcatNum;
+            var groupCount = selectedImagePaths.Count / ConcatNum;
+            if(lastLegenth != 0)
             {
-                var currentGroupImagePaths = selectedImagePaths.GetRange(i, i == final_index ? final_legenth : ConcatNum).ToList();
+                if (_isMergeLastToPrevious) { lastLegenth += _concatNum; }
+                else { groupCount++; }
+            }
+            else { lastLegenth = _concatNum; }
+
+            var previewVMs = new List<PreviewImageViewModel>(groupCount);
+
+            for (int i = 0; i < groupCount; i++)
+            {
+                var curGroupLength = (i < groupCount - 1) ? _concatNum : lastLegenth;
+                var currentGroupImagePaths = selectedImagePaths.GetRange(i*_concatNum, curGroupLength).ToList();
                 previewVMs.Add(new PreviewImageViewModel()
                 {
                     AllImageNames = currentGroupImagePaths.Aggregate(new StringBuilder(), (sb, t)=>sb.AppendLine(t.Item2)).ToString(),

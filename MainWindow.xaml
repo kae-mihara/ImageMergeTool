@@ -26,6 +26,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="50"/>
                 <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
@@ -35,11 +36,13 @@
             <TextBox Margin="10" Text="{Binding FolderPath, Mode=TwoWay}" Style="{StaticResource TextBoxRevealStyle}" VerticalContentAlignment="Center"/>
             <Button Grid.Column="2" Margin="0 10 10 10" MinWidth="70" HorizontalAlignment="Right" Style="{StaticResource ButtonAccentRevealStyle}" Click="OnBroserFolderClick">浏览</Button>
             <Button Grid.Column="1" Margin="0 10 10 10" MinWidth="70" HorizontalAlignment="Right" Style="{StaticResource ButtonAccentRevealStyle}" Click="OnOpenFolderClick">打开</Button>
-            <StackPanel Grid.Row="1" Orientation="Horizontal">
-                <CheckBox Grid.Row="1" Margin="10 0 0 0" IsChecked="{Binding CheckAll}" Foreground="{DynamicResource SystemBaseHighColorBrush}" Content="全选"/>
-                <CheckBox Grid.Row="1" Margin="10 0 0 0" IsChecked="{Binding InverseCheck, Mode=OneWayToSource}" Foreground="{DynamicResource SystemBaseHighColorBrush}" Content="反选"/>
+
+            <TextBlock Grid.Row="1" Margin="10 0 0 10" Text="占位符"/>
+            <StackPanel Grid.Row="2" Orientation="Horizontal">
+                <CheckBox Margin="10 0 0 0" IsChecked="{Binding CheckAll}" Foreground="{DynamicResource SystemBaseHighColorBrush}" Content="全选"/>
+                <CheckBox Margin="10 0 0 0" IsChecked="{Binding InverseCheck, Mode=OneWayToSource}" Foreground="{DynamicResource SystemBaseHighColorBrush}" Content="反选"/>
             </StackPanel>
-            <TextBlock Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Margin="0 0 10 0" HorizontalAlignment="Right">
+            <TextBlock Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Margin="0 0 10 0" HorizontalAlignment="Right">
                 <TextBlock.Inlines>
                     <Run>(已选择</Run>
                     <Run Text="{Binding SelectedImagePaths.Count,Mode=OneWay,FallbackValue=0}"/>
@@ -58,6 +61,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="50"/>
                 <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
             <StackPanel Orientation="Horizontal" Margin="10 0 0 0" >
                 <TextBlock VerticalAlignment="Center" Margin="0 0 10 0" >每</TextBlock>
@@ -68,8 +72,8 @@
             <Button Grid.Column="1" Margin="0 10 10 10" MinWidth="70" HorizontalAlignment="Right"  Content="保存" Style="{StaticResource ButtonAccentRevealStyle}" Click="OnSaveClickAsync"/>
             <Button Grid.Column="2" Margin="0 10 10 10" MinWidth="70" HorizontalAlignment="Right"  Content="查看" Style="{StaticResource ButtonAccentRevealStyle}" Click="OnOpenOutputClick"/>
 
-            <TextBlock Grid.Row="1" Grid.Column="0" Margin="10 0 0 0" Text="预览"/>
-            <TextBlock Grid.Row="1" Grid.Column="0" Margin="0 0 10 0" HorizontalAlignment="Right">
+            <TextBlock Grid.Row="2" Grid.Column="0" Margin="10 0 0 0" Text="预览"/>
+            <TextBlock Grid.Row="2" Grid.Column="0" Margin="0 0 10 0" HorizontalAlignment="Right">
                 <TextBlock.Inlines>
                     <Run Text="(已处理"/>
                     <Run Text="{Binding ProgressValue}"/>
@@ -78,8 +82,12 @@
                     <Run Text=")"/>
                 </TextBlock.Inlines>
             </TextBlock>
-            <ProgressBar Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Margin="0 0 10 0" Minimum="0" Maximum="{Binding PreviewImageViewModels.Count,Mode=OneWay}"
+            <ProgressBar Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Margin="0 0 10 0" Minimum="0" Maximum="{Binding PreviewImageViewModels.Count,Mode=OneWay}"
                          Value="{Binding ProgressValue}" Foreground="{x:Static fw:AccentColors.ImmersiveSystemAccentLight2Brush}"/>
+
+            <CheckBox Margin="0 0 0 10" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" 
+                      IsChecked="{Binding IsMergeLastToPrevious}" Foreground="{DynamicResource SystemBaseHighColorBrush}" Content="不够一组的拼到上一组"/>
+            
         </Grid>
         <Line Grid.RowSpan="3" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" 
               Y1="0" Y2="2000" Margin="0 10 0 10" StrokeThickness="2"

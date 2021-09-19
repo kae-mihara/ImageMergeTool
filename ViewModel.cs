@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
@@ -93,6 +94,32 @@ namespace ImageMerge
                 PreviewMergeResult();
             }
         }
+        private bool _mergeOrder = true;
+
+        public bool MergeOrder
+        {
+            get { return _mergeOrder; }
+            set
+            {
+                if (_mergeOrder == value) return;
+                _mergeOrder = value;
+                OnPropertyChanged("MergeOrder");
+                PreviewMergeResult();
+            }
+        }
+        private bool _mergeOrientation = true;
+
+        public bool MergeOrientation
+        {
+            get { return _mergeOrientation; }
+            set
+            {
+                if (_mergeOrientation == value) return;
+                _mergeOrientation = value;
+                OnPropertyChanged("MergeOrientation");
+                //PreviewMergeResult();
+            }
+        }
         public bool InverseCheck
         {
             set
@@ -118,21 +145,51 @@ namespace ImageMerge
             }
         }
 
-        #endregion
+        public int ImageQuality { get; internal set; }
+        public int ResizeRatio { get; internal set; }
+        public string FormatStr { get; set; }
+        public SKEncodedImageFormat Format => FormatStr switch
+        {
+            "jpg" => SKEncodedImageFormat.Jpeg,
+            "bmp" => SKEncodedImageFormat.Bmp,
+            "png" => SKEncodedImageFormat.Png,
+            "webp" => SKEncodedImageFormat.Webp,
+            _ => SKEncodedImageFormat.Jpeg
+        };
+    #endregion
 
+    private Regex _getNumFromFilePath = new Regex(@"\d+", RegexOptions.RightToLeft);
         internal void SetFilePaths(string folderPath = null)
         {
-            if (folderPath == FolderPath) return;
+            //if (folderPath == FolderPath) return;
             if (!string.IsNullOrWhiteSpace(folderPath)) { FolderPath = folderPath; }
             if (string.IsNullOrWhiteSpace(FolderPath)) { return; }
             try
             {
                 var filePaths = System.IO.Directory.GetFiles(FolderPath);
                 var fileNames = filePaths.Select(path => path[(path.LastIndexOf('\\') + 1)..path.Length])
-                                         .Where(path => path.EndsWith("png", StringComparison.OrdinalIgnoreCase) ||
+                                         .Where(path => path.EndsWith("bmp", StringComparison.OrdinalIgnoreCase) ||
+                                                        path.EndsWith("png", StringComparison.OrdinalIgnoreCase) ||
                                                         path.EndsWith("jpg", StringComparison.OrdinalIgnoreCase) ||
-                                                        path.EndsWith("jpeg", StringComparison.OrdinalIgnoreCase));             
-                SelectImageViewModels = fileNames
+                                                        path.EndsWith("jpeg", StringComparison.OrdinalIgnoreCase));
+                //Sort Files
+                var orderedFileNames = new SortedDictionary<int, string> ();
+                var  unorderedFileNames = new List<string>();
+                foreach (var s in fileNames)
+                {
+                    var numStr = _getNumFromFilePath.Match(s).Value;
+                    if (string.IsNullOrWhiteSpace(numStr))
+                    {
+                        unorderedFileNames.Add(s);
+                    }
+                    else
+                    {
+                        orderedFileNames[int.Parse(numStr)] = s;
+                    }
+                }
+
+                SelectImageViewModels = orderedFileNames.Values
+                    .Concat(unorderedFileNames)
                     .Select(str => new SelectImageViewModel() { ImageName = str })
                     .ToList();
                 ProgressValue = 0;
@@ -146,6 +203,7 @@ namespace ImageMerge
         {
             var selectedImagePaths = SelectedImagePaths;
             if (selectedImagePaths is null) return false;
+            if (!MergeOrder) selectedImagePaths.Reverse();
 
             int lastLegenth = selectedImagePaths.Count % ConcatNum;
             var groupCount = selectedImagePaths.Count / ConcatNum;
@@ -172,9 +230,9 @@ namespace ImageMerge
             PreviewImageViewModels = previewVMs;
             return true;
         }
-        private static void SaveImage(string savePath, SKImage mergedImage)
+        private void SaveImage(string savePath, SKImage mergedImage)
         {
-            using SKData encoded = mergedImage.Encode(SKEncodedImageFormat.Jpeg, 100);
+            using SKData encoded = mergedImage.Encode(Format, ImageQuality);
             using var outFile = File.OpenWrite(savePath);
             encoded.SaveTo(outFile);
         }
@@ -189,9 +247,13 @@ namespace ImageMerge
             {
                 Directory.CreateDirectory(OutputPath);
             }
-
-            await Task.Run(() =>
+            if (string.IsNullOrWhiteSpace(FolderPath))
             {
+                MessageBox.Show("请先打开一个文件夹");
+            }
+            var errorMsg = new StringBuilder();
+            await Task.Run(() =>
+            {  
                 //每次循环处理一组图片
                 for (int i = 0; i < _previewImageViewModels.Count; i++)
                 {
@@ -206,15 +268,37 @@ namespace ImageMerge
                                 using var file = new SKManagedStream(File.Open(path, FileMode.Open));
                                 return SKBitmap.Decode(file);
                             }
-                            catch { return null; }
+                            catch(FileNotFoundException e)
+                            {
+                                errorMsg.AppendLine($"没有找到{ e.FileName}");
+                                return null;
+                            }
+                            catch{ return null; }
                         })
                         .Where(image => image != null)
                         .ToList();
                     try
                     {
                         //开始拼接图片
-                        var mergedWidth = mergingImages.First().Width;
-                        var mergedHeight = mergingImages.Aggregate(0, (accumHeight, image) => accumHeight + image.Height);
+                        var resizeRatio = ResizeRatio * 0.01;
+                        var mergedHeight = 0;
+                        var mergedWidth = 0;
+                        var mergeDirectionLength = 0;
+                        var targetWidth = 0;
+                        if (_mergeOrientation)
+                        {
+                            mergedWidth = (int)Math.Round(mergingImages.First().Width * resizeRatio);
+                            mergedHeight = (int)Math.Round(mergingImages.Aggregate(0, (accumHeight, image) => accumHeight + image.Height) * resizeRatio);
+                            mergeDirectionLength = mergedHeight;
+                            targetWidth = mergedWidth;
+                        }
+                        else
+                        {
+                            mergedWidth = (int)Math.Round(mergingImages.Aggregate(0, (accumWidth, image) => accumWidth + image.Width) * resizeRatio);
+                            mergedHeight = (int)Math.Round(mergingImages.First().Height * resizeRatio);
+                            mergeDirectionLength = mergedWidth;
+                            targetWidth = mergedHeight;
+                        }
 
                         using (var tempSurface = SKSurface.Create(new SKImageInfo(mergedWidth, mergedHeight)))
                         {
@@ -227,22 +311,32 @@ namespace ImageMerge
                             int offsetY = 0;
                             foreach (var image in mergingImages)
                             {
-                                if (image.Width > mergedWidth)
+                                var mergeDirectionStep = _mergeOrientation ? image.Height : image.Width;
+                                var stackWidth = _mergeOrientation ? image.Width : image.Height;
+                                if (stackWidth > targetWidth)
                                 {
-                                    var resizeHeight = (int)((float)image.Height / image.Width * mergedWidth);
-                                    using var resizedImage = image.Resize(new SKImageInfo(mergedWidth, resizeHeight), SKFilterQuality.High);
-                                    canvas.DrawBitmap(image, SKRect.Create(offsetX, offsetY, resizedImage.Width, resizedImage.Height));
-                                    offsetY += resizeHeight;
+                                    var resizeLength = (int)((float)mergeDirectionStep / stackWidth * targetWidth);
+                                    var resizeTargetSize = _mergeOrientation
+                                    ? new SKImageInfo(targetWidth, resizeLength)
+                                    : new SKImageInfo(resizeLength, targetWidth);
+                                    using var resizedImage = image.Resize(resizeTargetSize, SKFilterQuality.High);
+                                    canvas.DrawBitmap(resizedImage, SKRect.Create(offsetX, offsetY, resizedImage.Width, resizedImage.Height));
+                                    if (_mergeOrientation) { offsetY += resizeLength; }
+                                    else { offsetX += resizeLength; }
                                 }
                                 else
                                 {
                                     canvas.DrawBitmap(image, SKRect.Create(offsetX, offsetY, image.Width, image.Height));
-                                    offsetY += image.Height;
+                                    if (_mergeOrientation) { offsetY += image.Height; }
+                                    else { offsetX += image.Width; }
                                 }
                             }
-                            var mergedImage = tempSurface.Snapshot(SKRectI.Create(0, 0, mergedWidth, offsetY));
+
+                            var mergedImage =  tempSurface.Snapshot(_mergeOrientation
+                                ? SKRectI.Create(0, 0, mergedWidth, offsetY)
+                                : SKRectI.Create(0, 0, offsetX, mergedHeight));
                             //保存图片
-                            SaveImage($"{OutputPath}\\{i:D2}.jpg", mergedImage);
+                            SaveImage($"{OutputPath}\\{i:D2}.{FormatStr}", mergedImage);
 
                             uiDispatcher.Invoke(() =>
                             {
@@ -261,6 +355,12 @@ namespace ImageMerge
                     }
                 }
             }).ConfigureAwait(true);
+            //弹出错误框
+            var msg = errorMsg.ToString();
+            if (!string.IsNullOrWhiteSpace(msg))
+            {
+                MessageBox.Show(msg);
+            }
         }
 
         public void OnPropertyChanged(string name)=> PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));

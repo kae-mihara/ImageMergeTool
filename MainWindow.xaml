@@ -9,7 +9,211 @@
         fw:AcrylicWindow.AcrylicWindowStyle="NoIcon"
         AllowsTransparency="True" WindowStyle="None"
         mc:Ignorable="d"    
-        Title="可以把一个文件夹里的图片每几个一组竖着拼到一起的小工具 - by: mihara kae" Height="450" Width="800">
+        Title="三花拼图器" Height="450" Width="800">
+    <Window.Resources>
+        <Style x:Key="FocusVisual">
+            <Setter Property="Control.Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Rectangle Margin="2" StrokeDashArray="1 2" SnapsToDevicePixels="true" StrokeThickness="1" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="OptionMarkFocusVisual">
+            <Setter Property="Control.Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Rectangle Margin="14,0,0,0" StrokeDashArray="1 2" SnapsToDevicePixels="true" StrokeThickness="1" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <SolidColorBrush x:Key="OptionMark.Static.Background" Color="#FFFFFFFF"/>
+        <SolidColorBrush x:Key="OptionMark.Static.Border" Color="#FF707070"/>
+        <SolidColorBrush x:Key="OptionMark.Static.Glyph" Color="#FF212121"/>
+        <SolidColorBrush x:Key="OptionMark.MouseOver.Background" Color="#FFF3F9FF"/>
+        <SolidColorBrush x:Key="OptionMark.MouseOver.Border" Color="#FF5593FF"/>
+        <SolidColorBrush x:Key="OptionMark.MouseOver.Glyph" Color="#FF212121"/>
+        <SolidColorBrush x:Key="OptionMark.Pressed.Background" Color="#FFD9ECFF"/>
+        <SolidColorBrush x:Key="OptionMark.Pressed.Border" Color="#FF3C77DD"/>
+        <SolidColorBrush x:Key="OptionMark.Pressed.Glyph" Color="#FF212121"/>
+        <SolidColorBrush x:Key="OptionMark.Disabled.Background" Color="#FFE6E6E6"/>
+        <SolidColorBrush x:Key="OptionMark.Disabled.Border" Color="#FFBCBCBC"/>
+        <SolidColorBrush x:Key="OptionMark.Disabled.Glyph" Color="#FF707070"/>
+        <Style x:Key="OrderCheckBox" TargetType="{x:Type CheckBox}">
+            <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
+            <Setter Property="Background" Value="{StaticResource OptionMark.Static.Background}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource OptionMark.Static.Border}"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type CheckBox}">
+                        <Grid x:Name="templateRoot" Background="Transparent" SnapsToDevicePixels="True">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border x:Name="checkBoxBorder" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="1" VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+                                <Grid x:Name="markGrid">
+                                    <Path x:Name="optionMark" Data="F1 M 9.97498,1.22334L 4.6983,9.09834L 4.52164,9.09834L 0,5.19331L 1.27664,3.52165L 4.255,6.08833L 8.33331,1.52588e-005L 9.97498,1.22334 Z " Fill="{StaticResource OptionMark.Static.Glyph}" Margin="1" Opacity="0" Stretch="None"/>
+                                    <Rectangle x:Name="indeterminateMark" Fill="{StaticResource OptionMark.Static.Glyph}" Margin="2" Opacity="0"/>
+                                </Grid>
+                            </Border>
+                            <ContentPresenter x:Name="contentPresenter" Grid.Column="1" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="HasContent" Value="true">
+                                <Setter Property="FocusVisualStyle" Value="{StaticResource OptionMarkFocusVisual}"/>
+                                <Setter Property="Padding" Value="4,-1,0,0"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter Property="Background" TargetName="checkBoxBorder" Value="{StaticResource OptionMark.MouseOver.Background}"/>
+                                <Setter Property="BorderBrush" TargetName="checkBoxBorder" Value="{StaticResource OptionMark.MouseOver.Border}"/>
+                                <Setter Property="Fill" TargetName="optionMark" Value="{StaticResource OptionMark.MouseOver.Glyph}"/>
+                                <Setter Property="Fill" TargetName="indeterminateMark" Value="{StaticResource OptionMark.MouseOver.Glyph}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="false">
+                                <Setter Property="Background" TargetName="checkBoxBorder" Value="{StaticResource OptionMark.Disabled.Background}"/>
+                                <Setter Property="BorderBrush" TargetName="checkBoxBorder" Value="{StaticResource OptionMark.Disabled.Border}"/>
+                                <Setter Property="Fill" TargetName="optionMark" Value="{StaticResource OptionMark.Disabled.Glyph}"/>
+                                <Setter Property="Fill" TargetName="indeterminateMark" Value="{StaticResource OptionMark.Disabled.Glyph}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="true">
+                                <Setter Property="Background" TargetName="checkBoxBorder" Value="{StaticResource OptionMark.Pressed.Background}"/>
+                                <Setter Property="BorderBrush" TargetName="checkBoxBorder" Value="{StaticResource OptionMark.Pressed.Border}"/>
+                                <Setter Property="Fill" TargetName="optionMark" Value="{StaticResource OptionMark.Pressed.Glyph}"/>
+                                <Setter Property="Fill" TargetName="indeterminateMark" Value="{StaticResource OptionMark.Pressed.Glyph}"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter Property="Opacity" TargetName="optionMark" Value="1"/>
+                                <Setter Property="Opacity" TargetName="indeterminateMark" Value="0"/>
+                                <Setter Property="Content">
+                                    <Setter.Value>
+                                        <TextBlock>
+                                            <TextBlock.Inlines>
+                                                <Run Text="正序" Foreground="{x:Static fw:AccentColors.ImmersiveSystemAccentLight1Brush}"/>
+                                                <Run Text="/" Foreground="{DynamicResource SystemBaseHighColorBrush}"/>
+                                                <Run Text="倒序" Foreground="{DynamicResource SystemBaseHighColorBrush}"/>
+                                            </TextBlock.Inlines>
+                                        </TextBlock>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="False">
+                                <Setter Property="Opacity" TargetName="optionMark" Value="0"/>
+                                <Setter Property="Opacity" TargetName="indeterminateMark" Value="0"/>
+                                <Setter Property="Content">
+                                    <Setter.Value>
+                                        <TextBlock>
+                                            <TextBlock.Inlines>
+                                                <Run Text="正序" Foreground="{DynamicResource SystemBaseHighColorBrush}"/>
+                                                <Run Text="/" Foreground="{DynamicResource SystemBaseHighColorBrush}"/>
+                                                <Run Text="倒序" Foreground="{x:Static fw:AccentColors.ImmersiveSystemAccentLight1Brush}"/>
+                                            </TextBlock.Inlines>
+                                        </TextBlock>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="{x:Null}">
+                                <Setter Property="Opacity" TargetName="optionMark" Value="0"/>
+                                <Setter Property="Opacity" TargetName="indeterminateMark" Value="1"/>
+                                <Setter Property="Content" Value="正序/倒序"/>
+                                <Setter Property="Foreground" Value="{DynamicResource SystemBaseHighColorBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="OrientationCheckBox" TargetType="{x:Type CheckBox}">
+            <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
+            <Setter Property="Background" Value="{StaticResource OptionMark.Static.Background}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource OptionMark.Static.Border}"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type CheckBox}">
+                        <Grid x:Name="templateRoot" Background="Transparent" SnapsToDevicePixels="True">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border x:Name="checkBoxBorder" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="1" VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+                                <Grid x:Name="markGrid">
+                                    <Path x:Name="optionMark" Data="F1 M 9.97498,1.22334L 4.6983,9.09834L 4.52164,9.09834L 0,5.19331L 1.27664,3.52165L 4.255,6.08833L 8.33331,1.52588e-005L 9.97498,1.22334 Z " Fill="{StaticResource OptionMark.Static.Glyph}" Margin="1" Opacity="0" Stretch="None"/>
+                                    <Rectangle x:Name="indeterminateMark" Fill="{StaticResource OptionMark.Static.Glyph}" Margin="2" Opacity="0"/>
+                                </Grid>
+                            </Border>
+                            <ContentPresenter x:Name="contentPresenter" Grid.Column="1" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="HasContent" Value="true">
+                                <Setter Property="FocusVisualStyle" Value="{StaticResource OptionMarkFocusVisual}"/>
+                                <Setter Property="Padding" Value="4,-1,0,0"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter Property="Background" TargetName="checkBoxBorder" Value="{StaticResource OptionMark.MouseOver.Background}"/>
+                                <Setter Property="BorderBrush" TargetName="checkBoxBorder" Value="{StaticResource OptionMark.MouseOver.Border}"/>
+                                <Setter Property="Fill" TargetName="optionMark" Value="{StaticResource OptionMark.MouseOver.Glyph}"/>
+                                <Setter Property="Fill" TargetName="indeterminateMark" Value="{StaticResource OptionMark.MouseOver.Glyph}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="false">
+                                <Setter Property="Background" TargetName="checkBoxBorder" Value="{StaticResource OptionMark.Disabled.Background}"/>
+                                <Setter Property="BorderBrush" TargetName="checkBoxBorder" Value="{StaticResource OptionMark.Disabled.Border}"/>
+                                <Setter Property="Fill" TargetName="optionMark" Value="{StaticResource OptionMark.Disabled.Glyph}"/>
+                                <Setter Property="Fill" TargetName="indeterminateMark" Value="{StaticResource OptionMark.Disabled.Glyph}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="true">
+                                <Setter Property="Background" TargetName="checkBoxBorder" Value="{StaticResource OptionMark.Pressed.Background}"/>
+                                <Setter Property="BorderBrush" TargetName="checkBoxBorder" Value="{StaticResource OptionMark.Pressed.Border}"/>
+                                <Setter Property="Fill" TargetName="optionMark" Value="{StaticResource OptionMark.Pressed.Glyph}"/>
+                                <Setter Property="Fill" TargetName="indeterminateMark" Value="{StaticResource OptionMark.Pressed.Glyph}"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter Property="Opacity" TargetName="optionMark" Value="1"/>
+                                <Setter Property="Opacity" TargetName="indeterminateMark" Value="0"/>
+                                <Setter Property="Content">
+                                    <Setter.Value>
+                                        <TextBlock>
+                                            <TextBlock.Inlines>
+                                                <Run Text="竖拼" Foreground="{x:Static fw:AccentColors.ImmersiveSystemAccentLight1Brush}"/>
+                                                <Run Text="/" Foreground="{DynamicResource SystemBaseHighColorBrush}"/>
+                                                <Run Text="横拼" Foreground="{DynamicResource SystemBaseHighColorBrush}"/>
+                                            </TextBlock.Inlines>
+                                        </TextBlock>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="False">
+                                <Setter Property="Opacity" TargetName="optionMark" Value="0"/>
+                                <Setter Property="Opacity" TargetName="indeterminateMark" Value="0"/>
+                                <Setter Property="Content">
+                                    <Setter.Value>
+                                        <TextBlock>
+                                            <TextBlock.Inlines>
+                                                <Run Text="竖拼" Foreground="{DynamicResource SystemBaseHighColorBrush}"/>
+                                                <Run Text="/" Foreground="{DynamicResource SystemBaseHighColorBrush}"/>
+                                                <Run Text="横拼" Foreground="{x:Static fw:AccentColors.ImmersiveSystemAccentLight1Brush}"/>
+                                            </TextBlock.Inlines>
+                                        </TextBlock>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="{x:Null}">
+                                <Setter Property="Opacity" TargetName="optionMark" Value="0"/>
+                                <Setter Property="Opacity" TargetName="indeterminateMark" Value="1"/>
+                                <Setter Property="Content" Value="竖拼/横拼"/>
+                                <Setter Property="Foreground" Value="{DynamicResource SystemBaseHighColorBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
     <Window.DataContext>
         <local:ViewModel/>
     </Window.DataContext>
@@ -37,12 +241,12 @@
             <Button Grid.Column="2" Margin="0 10 10 10" MinWidth="70" HorizontalAlignment="Right" Style="{StaticResource ButtonAccentRevealStyle}" Click="OnBroserFolderClick">浏览</Button>
             <Button Grid.Column="1" Margin="0 10 10 10" MinWidth="70" HorizontalAlignment="Right" Style="{StaticResource ButtonAccentRevealStyle}" Click="OnOpenFolderClick">打开</Button>
 
-            <TextBlock Grid.Row="1" Margin="10 0 0 10" Text="占位符"/>
+            <TextBlock Grid.Row="1" Margin="10 0 0 10" Text=""/>
             <StackPanel Grid.Row="2" Orientation="Horizontal">
                 <CheckBox Margin="10 0 0 0" IsChecked="{Binding CheckAll}" Foreground="{DynamicResource SystemBaseHighColorBrush}" Content="全选"/>
                 <CheckBox Margin="10 0 0 0" IsChecked="{Binding InverseCheck, Mode=OneWayToSource}" Foreground="{DynamicResource SystemBaseHighColorBrush}" Content="反选"/>
             </StackPanel>
-            <TextBlock Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Margin="0 0 10 0" HorizontalAlignment="Right">
+            <TextBlock Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Margin="0 0 10 0" HorizontalAlignment="Right" Foreground="{DynamicResource SystemBaseHighColorBrush}">
                 <TextBlock.Inlines>
                     <Run>(已选择</Run>
                     <Run Text="{Binding SelectedImagePaths.Count,Mode=OneWay,FallbackValue=0}"/>
@@ -64,16 +268,19 @@
                 <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
             <StackPanel Orientation="Horizontal" Margin="10 0 0 0" >
-                <TextBlock VerticalAlignment="Center" Margin="0 0 10 0" >每</TextBlock>
-                <TextBox   VerticalAlignment="Stretch" VerticalContentAlignment="Center" Margin="0 10 10 10" Width="30"
+                <TextBlock VerticalAlignment="Center" Margin="0 0 10 0" Foreground="{DynamicResource SystemBaseHighColorBrush}">每</TextBlock>
+                <TextBox   VerticalAlignment="Stretch" VerticalContentAlignment="Center" Margin="0 10 10 10" Width="30" 
                            Style="{StaticResource TextBoxRevealStyle}" Text="{Binding ConcatNum, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=400}"/>
-                <TextBlock VerticalAlignment="Center" Margin="0 0 10 0" >张图片拼在一起（最小2张）</TextBlock>
+                <TextBlock VerticalAlignment="Center" Margin="0 0 10 0" Foreground="{DynamicResource SystemBaseHighColorBrush}">张图片拼在一起（最小2张）</TextBlock>
             </StackPanel>
             <Button Grid.Column="1" Margin="0 10 10 10" MinWidth="70" HorizontalAlignment="Right"  Content="保存" Style="{StaticResource ButtonAccentRevealStyle}" Click="OnSaveClickAsync"/>
             <Button Grid.Column="2" Margin="0 10 10 10" MinWidth="70" HorizontalAlignment="Right"  Content="查看" Style="{StaticResource ButtonAccentRevealStyle}" Click="OnOpenOutputClick"/>
-
-            <TextBlock Grid.Row="2" Grid.Column="0" Margin="10 0 0 0" Text="预览"/>
-            <TextBlock Grid.Row="2" Grid.Column="0" Margin="0 0 10 0" HorizontalAlignment="Right">
+            <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Top">
+                <CheckBox Margin="10 0 0 0" IsChecked="{Binding MergeOrder, Mode=TwoWay}" Style="{DynamicResource OrderCheckBox}" />
+                <CheckBox Margin="10 0 0 0" IsChecked="{Binding MergeOrientation, Mode=TwoWay}" Style="{DynamicResource OrientationCheckBox}" />
+            </StackPanel>
+            <TextBlock Grid.Row="2" Grid.Column="0" Margin="10 0 0 0" Text="预览" Foreground="{DynamicResource SystemBaseHighColorBrush}"/>
+            <TextBlock Grid.Row="2" Grid.Column="0" Margin="0 0 10 0" HorizontalAlignment="Right" Foreground="{DynamicResource SystemBaseHighColorBrush}">
                 <TextBlock.Inlines>
                     <Run Text="(已处理"/>
                     <Run Text="{Binding ProgressValue}"/>
@@ -85,9 +292,14 @@
             <ProgressBar Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Margin="0 0 10 0" Minimum="0" Maximum="{Binding PreviewImageViewModels.Count,Mode=OneWay}"
                          Value="{Binding ProgressValue}" Foreground="{x:Static fw:AccentColors.ImmersiveSystemAccentLight2Brush}"/>
 
-            <CheckBox Margin="0 0 0 10" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" 
-                      IsChecked="{Binding IsMergeLastToPrevious}" Foreground="{DynamicResource SystemBaseHighColorBrush}" Content="不够一组的拼到上一组"/>
-            
+            <Button Margin="0 0 10 10" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Click="Option_Click" BorderThickness="0" Background="Transparent" Style="{StaticResource ButtonAccentRevealStyle}" HorizontalContentAlignment="Right">
+                <StackPanel Orientation="Horizontal">
+                    <Path CacheMode="BitmapCache" Stretch="Fill" Margin="10 0 0 0" Stroke="{DynamicResource SystemBaseHighColorBrush}" Height="12" Width="12" Data="M15.480948,9.3740862C11.821038,9.349078 8.835932,12.302046 8.8129828,15.962005 8.7910101,19.622958 11.734978,22.608914 15.390982,22.628934 19.05492,22.651914 22.040026,19.712952 22.06798,16.044997 22.093981,12.388043 19.14098,9.3940753 15.480948,9.3740862z M15.536978,0.00018994781C16.92504,0.010184512,18.260975,0.21619097,19.536976,0.55418442L20.067982,4.0571488C21.364001,4.5541366,22.550036,5.2501277,23.598007,6.1201123L26.91197,4.8681282C28.776961,6.7871116,30.152935,9.1710862,30.869,11.835056L28.094954,14.04702C28.197005,14.711014,28.262923,15.391013,28.259016,16.081008L28.257918,16.081008C28.24803,16.779988,28.177962,17.459988,28.063948,18.126973L30.813946,20.369943C30.061016,23.017905,28.655989,25.384883,26.767927,27.287875L23.473984,25.99187C22.413927,26.838876,21.209948,27.517852,19.920033,28.001855L19.339955,31.501813C18.056019,31.822823 16.719961,32.006814 15.332022,31.999823 13.946037,31.992804 12.609978,31.791819 11.326043,31.449813L10.801995,27.946864C9.5119574,27.448853,8.3179877,26.756875,7.2650101,25.886889L3.9580054,27.140874C2.0959458,25.219907,0.71594182,22.834926,0,20.172953L2.7800278,17.964972C2.6729719,17.299987 2.6080305,16.624991 2.6099839,15.921997 2.62097,15.229012 2.6960432,14.548021 2.8039536,13.888025L0.053955107,11.638052C0.80102477,8.9870823,2.2080064,6.6141099,4.0939915,4.7241329L7.3969681,6.0201224C8.453974,5.1601323,9.6610052,4.4851373,10.960931,3.9981435L11.520989,0.50418179C12.812981,0.18019591,14.150993,-0.0068135771,15.536978,0.00018994781z"/>
+                    <TextBlock Margin="5 0 10 0" Foreground="{DynamicResource SystemBaseHighColorBrush}">选项</TextBlock>
+                </StackPanel>
+               
+            </Button>
+
         </Grid>
         <Line Grid.RowSpan="3" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" 
               Y1="0" Y2="2000" Margin="0 10 0 10" StrokeThickness="2"

@@ -1,6 +1,5 @@
 ﻿using Microsoft.Win32;
 using System;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows;
 
@@ -16,27 +15,41 @@ namespace ImageMerge
         {
             InitializeComponent();    
         }
-        protected override void OnInitialized(EventArgs e)
+
+        void ReadSettings()
         {
-            base.OnInitialized(e);
             try
             {
-                VM.ConcatNum = int.Parse(System.Configuration.ConfigurationManager.AppSettings["ConcatNum"]);
-                VM.FolderPath = System.Configuration.ConfigurationManager.AppSettings["LastFolderPath"];
+                //System.Configuration.ConfigurationManager.
+                var settings = Properties.Settings.Default;
+                VM.ConcatNum = settings.ConcatNum;                       
+                VM.IsMergeLastToPrevious = settings.MergeLastToPrevious; 
+                VM.ImageQuality = settings.ImageQuality; 
+                VM.ResizeRatio = settings.ResizeRatio;   
+                VM.FormatStr = settings.FormatStr;       
             }
             catch
             {
                 VM.ConcatNum = 5;
+                VM.IsMergeLastToPrevious = false;
+                VM.ImageQuality = 100;
+                VM.ResizeRatio = 100;
+                VM.FormatStr = "jpg";
             }
+        }
+        protected override void OnInitialized(EventArgs e)
+        {
+            base.OnInitialized(e);
+            VM.FolderPath = System.Configuration.ConfigurationManager.AppSettings["LastFolderPath"];
+            ReadSettings();
         }
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
-            var config = System.Configuration.ConfigurationManager.OpenExeConfiguration(System.Configuration.ConfigurationUserLevel.None);
-            config.AppSettings.Settings["ConcatNum"].Value = VM.ConcatNum.ToString();
-            config.AppSettings.Settings["LastFolderPath"].Value = VM.FolderPath;
-            config.Save(System.Configuration.ConfigurationSaveMode.Modified);
-            System.Configuration.ConfigurationManager.RefreshSection("appSettings");
+            var settings = Properties.Settings.Default;
+            settings.ConcatNum = VM.ConcatNum;
+            settings.LastFolderPath = VM.FolderPath;
+            settings.Save();
         }
 
         private void OnBroserFolderClick(object sender, RoutedEventArgs e)
@@ -67,6 +80,15 @@ namespace ImageMerge
             VM.OnPropertyChanged("SelectedImagePaths");
             VM.PreviewMergeResult();
             //var vm = (sender as FrameworkElement).DataContext as SelectImageViewModel;        
+        }
+
+        private void Option_Click(object sender, RoutedEventArgs e)
+        {
+            var result = new OptionWindow().ShowDialog() ?? false;
+            if (result)
+            {
+                ReadSettings();
+            }
         }
     }
 }

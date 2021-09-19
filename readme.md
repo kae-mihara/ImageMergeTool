@@ -10,15 +10,14 @@
 
 v1.0.233 更新于2020/7/14:
 
+
 #### OneDrive:
 
-Any: https://1drv.ws/u/s!Alj0ydiVJuRpmJd9zQ2jQDIPkafPgg?e=017kbW
-
-x64: https://1drv.ws/u/s!Alj0ydiVJuRpmJd8t0pO6jxvigfQsA?e=erYc2T
+之前用的OneDrive外链提取器坏掉了，所以暂不提供
 
 #### Github: 
 
-Release页面自取
+https://github.com/kae-mihara/ImageMergeTool/releases
 
 ## 使用说明
 
